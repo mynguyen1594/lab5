@@ -31,11 +31,11 @@ public:
     int hash(const ItemType & newEntry);
     bool insert(const ItemType & newEntry);
     bool search(const ItemType & target, ItemType & returnTarget);
-    void printItem(ItemType table[], int index, void visit(ItemType &));
+    void printItem(ItemType * nodePtr, bool displayList, void visit(ItemType &));
     void displayList(void visit(ItemType &));
     void printHashTable(void visit(ItemType &));
     void statistics();
-    int count(int index);
+    int countNode(int index);
 };
 
 // **************************************
@@ -69,15 +69,17 @@ HashTable<ItemType>::~HashTable<ItemType>() {
     }
     delete [] table;
 }
-// **************************************
+// *************************************************
 //  hash function
-//  Return the hashed number as an index
-// **************************************
+//  This function finds the sum of the newEntry as
+//  a title by converting each character to ascii
+//  and summing them up.
+//  Return: a hashed number less than the TABLE_SIZE
+// *************************************************
 template <class ItemType>
 int HashTable<ItemType>::hash(const ItemType & newEntry) {
     int sum = 0;
     
-    // Find the sum of the title by converting each character to ascii and summing up
     for (int i = 0; i < (newEntry.getTitle()).length(); i++) {
         char x = (newEntry.getTitle()).at(i);
         sum += int(x);
@@ -85,9 +87,14 @@ int HashTable<ItemType>::hash(const ItemType & newEntry) {
     return (sum % TABLE_SIZE);
 }
 
-// **************************************
+// ******************************************************
 //  insert function
-// **************************************
+//  This function inserts new data into the hash table.
+//  If the place in the hash table has been already taken
+//  it will create and insert in a singly linked list
+//  Return: true if inserted successfully
+//          false if not
+// ******************************************************
 template<class ItemType>
 bool HashTable<ItemType>::insert(const ItemType & newEntry) {
     bool success = false;
@@ -105,22 +112,24 @@ bool HashTable<ItemType>::insert(const ItemType & newEntry) {
     else {
         ItemType * nodePtr = &table[index];
         
-        while (nodePtr->getNext() != NULL) {
+        while (nodePtr->getNext())
             nodePtr = nodePtr->getNext();
-        }
         nodePtr->setNext(newNode);
 
         numberOfCollision++;
         success = true;
-        }
-
+    }
     
     return success;
 }
 
-// **************************************
+// *************************************************
 //  search function
-// **************************************
+//  This function searches for the year of the movie
+//  by using the title as the key.
+//  Return: true if found
+//          false if not
+// *************************************************
 template <class ItemType>
 bool HashTable<ItemType>::search(const ItemType & target, ItemType & returnTarget) {
     bool found = false;
@@ -128,7 +137,7 @@ bool HashTable<ItemType>::search(const ItemType & target, ItemType & returnTarge
     int index = hash(target);
     ItemType * nodePtr = &table[index];
     
-    while (nodePtr != NULL) {   // If nodePtr points to something
+    while (nodePtr) {
         if (nodePtr->getTitle() == target.getTitle()) {
             returnTarget = *nodePtr;
             found = true;
@@ -136,71 +145,72 @@ bool HashTable<ItemType>::search(const ItemType & target, ItemType & returnTarge
         nodePtr = nodePtr->getNext();
     }
     
-    if (!found) {
+    if (!found)
         found = false;
-    }
+    
     return found;
 }
 
-// **************************************
+// ********************************************
 //  printItem function
-// **************************************
+//  This function prints out the year and title
+//  Return: none
+// ********************************************
 template <class ItemType>
-void HashTable<ItemType>::printItem(ItemType table[], int index, void visit(ItemType &)) {
+void HashTable<ItemType>::printItem(ItemType * nodePtr, bool displayList , void visit(ItemType &)) {
     ItemType item;
     
-    item.setYear(table[index].getYear());
-    item.setTitle(table[index].getTitle());
+    item.setYear(nodePtr->getYear());
+    item.setTitle(nodePtr->getTitle());
+    if (!displayList) {
+        cout << "\t\t ";
+    }
     visit(item);
 
     return;
 }
 
-// **************************************
+// **********************************************
 //  displayList function
-// **************************************
+//  This function displays every item in the file
+//  Return: none
+// **********************************************
 template <class ItemType>
 void HashTable<ItemType>::displayList(void visit(ItemType &)) {
-    ItemType item;
-    
+    // Print the hash table
     for (int i = 0; i < TABLE_SIZE; i++) {
-        printItem(table, i, visit);
-
-        if (table[i].getNext() != NULL) {
-            ItemType * nodePtr = table[i].getNext();
-            
-            while (nodePtr != NULL) {
-                item.setYear(nodePtr->getYear());
-                item.setTitle(nodePtr->getTitle());
-                visit(item);
-                nodePtr = nodePtr->getNext();
-            }
+        ItemType * nodePtr = &table[i];
+        printItem(nodePtr, true, visit);
+        
+        // Print the linked list if any
+        while (nodePtr->getNext() != NULL) {
+            nodePtr = nodePtr->getNext();
+            printItem(nodePtr, true, visit);
         }
     }
     return;
 }
 
-// **************************************
+// **************************************************
 //  printHashTable function
-// **************************************
+//  This function prints out the indented hash table
+//  by showing the index and what elements are in the
+//  linked list
+//  Return: none
+// **************************************************
 template <class ItemType>
 void HashTable<ItemType>::printHashTable(void (visit)(ItemType &)) {
-    ItemType item;
-    
+    // Print the hash table and the index
     for (int i = 0; i < TABLE_SIZE; i++) {
+        ItemType * nodePtr = &table[i];
         cout << "Index " << i << ": ";
-        if (table[i].getYear() != -1) {
-            printItem(table, i, visit);
- 
-            if (table[i].getNext() != NULL) {
-                ItemType * nodePtr = table[i].getNext();
-                while (nodePtr != NULL) {
-                    item.setYear(nodePtr->getYear());
-                    item.setTitle(nodePtr->getTitle());
-                    cout << "\t\t ";
-                    visit(item);
-                    nodePtr = nodePtr->getNext();
-                }
+        if (nodePtr->getYear() != -1) {
+            printItem(nodePtr, true, visit);
+            
+            // Print the linked list if any
+            while (nodePtr->getNext() != NULL) {
+                nodePtr = nodePtr->getNext();
+                printItem(nodePtr, false, visit);
             }
         }
         else
@@ -209,6 +219,29 @@ void HashTable<ItemType>::printHashTable(void (visit)(ItemType &)) {
     return;
 }
 
+// **************************************
+//  countNode function
+// **************************************
+template <class ItemType>
+int HashTable<ItemType>::countNode(int index) {
+    int number = 0;
+    
+    if (table[index].getTitle() == "") {
+        return 0;
+    }
+    else {
+        if (table[index].getNext() != NULL) {
+            ItemType * nodePtr = table[index].getNext();
+            while (nodePtr != NULL) {
+                nodePtr = nodePtr->getNext();
+                number++;
+            }
+        }
+        else
+            return number;
+    }
+    return number;
+}
 // **************************************
 //  statistics function
 // **************************************
@@ -228,12 +261,12 @@ void HashTable<ItemType>::statistics() {
     cout << "Number of linked lists: " << numList << endl;
     
     int totalNode = 0;
-    int longest = count(0);
+    int longest = countNode(0);
 
     for (int i = 1; i < TABLE_SIZE; i++) {
         totalNode++;
-        if (longest <= count(i)) {
-            longest = count(i);
+        if (longest <= countNode(i)) {
+            longest = countNode(i);
         }
     }
     cout << "Longest: " << longest << endl;
@@ -242,27 +275,5 @@ void HashTable<ItemType>::statistics() {
     return;
 }
 
-// **************************************
-//  count function
-// **************************************
-template <class ItemType>
-int HashTable<ItemType>::count(int index) {
-    int number = 0;
-    
-    if (table[index].getTitle() == "") {
-        return 0;
-    }
-    else {
-        if (table[index].getNext() != NULL) {
-            ItemType * nodePtr = table[index].getNext();
-            while (nodePtr != NULL) {
-                nodePtr = nodePtr->getNext();
-                number++;
-            }
-        }
-        else
-            return number;
-    }
-    return number;
-}
+
 #endif
