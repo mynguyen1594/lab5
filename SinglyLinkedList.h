@@ -46,6 +46,10 @@ void LinkedList<ItemType>::append(ItemType * nodePtr, const ItemType & newEntry)
         this->count++;
     }
     
+    else {
+        head = newNode;
+    }
+    
     return;
 }
 

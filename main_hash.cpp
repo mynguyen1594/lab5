@@ -28,11 +28,13 @@ int main() {
    
     menu(movie);
     
+    delete movie;
+    
     return 0;
 }
 
 // **************************************
-//  readFile function
+//  readFile functions
 // **************************************
 bool readFile(HashTable<Movie> * movie) {
     ifstream inputFile;
