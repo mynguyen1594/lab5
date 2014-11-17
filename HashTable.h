@@ -12,13 +12,13 @@ using namespace std;
 #ifndef lab5_HashTable_h
 #define lab5_HashTable_h
 
-#define TABLE_SIZE 31
+#define TABLE_SIZE 10
 
 template <class ItemType>
 class HashTable {
 private:
     ItemType * table;
-    int loadFactor;
+    int loadNumber;
     int numberOfCollision;
     
 public:
@@ -26,7 +26,7 @@ public:
     ~HashTable();
     
     ItemType getTable() {return table[TABLE_SIZE];}
-    int getloadFactor() {return loadFactor;}
+    int getloadNumber() {return loadNumber;}
     
     int hash(const ItemType & newEntry);
     bool insert(const ItemType & newEntry);
@@ -44,7 +44,7 @@ public:
 template <class ItemType>
 HashTable<ItemType>::HashTable() {
     table = new ItemType[TABLE_SIZE];
-    loadFactor = 0;
+    loadNumber = 0;
     numberOfCollision = 0;
 }
 
@@ -58,14 +58,14 @@ HashTable<ItemType>::~HashTable<ItemType>() {
     
     for (int i = 0; i < TABLE_SIZE; i++) {
         currentPtr = table[i].getNext();
-        table[i].setNext(NULL);
+        table[i].setNext(NULL); // Disconnect linked list from hash table
+        
+        // Start deleting from the beginning
         while (currentPtr != NULL) {
             nextPtr = currentPtr;
             currentPtr = currentPtr->getNext();
             delete nextPtr;
-            
         }
-        
     }
     delete [] table;
 }
@@ -91,36 +91,29 @@ int HashTable<ItemType>::hash(const ItemType & newEntry) {
 template<class ItemType>
 bool HashTable<ItemType>::insert(const ItemType & newEntry) {
     bool success = false;
-    
-    if (loadFactor < TABLE_SIZE) {
-        int index = hash(newEntry); // Get the index
+    ItemType * newNode = new ItemType(newEntry);
+    int index = hash(newEntry); // Get the index
         
-        // if the place is empty
-        if (table[index].getTitle() == "") {
-            table[index].setInfo(newEntry.getYear(), newEntry.getTitle());
-            loadFactor++;
-            success = true;
-        }
-        
-        // if not, then create a linked list at this index
-        else {
-            ItemType * newNode = new ItemType(newEntry);
-            ItemType * nodePtr = table[index].getNext();
-            
-            if (nodePtr == NULL)
-                table[index].setNext(newNode);
-            
-            else {
-                while (nodePtr->getNext() != NULL) {
-                    nodePtr = nodePtr->getNext();
-                }
-                nodePtr->setNext(newNode);
-            }
-
-            numberOfCollision++;
-            success = true;
-        }
+    // if the place is empty
+    if (table[index].getTitle() == "") {
+        table[index] = *newNode;
+        loadNumber++;
+        success = true;
     }
+        
+    // if not, then create a linked list at this index
+    else {
+        ItemType * nodePtr = &table[index];
+        
+        while (nodePtr->getNext() != NULL) {
+            nodePtr = nodePtr->getNext();
+        }
+        nodePtr->setNext(newNode);
+
+        numberOfCollision++;
+        success = true;
+        }
+
     
     return success;
 }
@@ -223,7 +216,7 @@ template <class ItemType>
 void HashTable<ItemType>::statistics() {
     cout << "Number of collision: " << numberOfCollision << endl;
 
-    double load = 100*loadFactor/TABLE_SIZE;
+    double load = 100*loadNumber/TABLE_SIZE;
     cout << "Load percent: " <<  load  << "%" << endl;
     
     int numList = 0;
