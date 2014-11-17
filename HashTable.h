@@ -226,19 +226,15 @@ template <class ItemType>
 int HashTable<ItemType>::countNode(int index) {
     int number = 0;
     
-    if (table[index].getTitle() == "") {
+    if (table[index].getTitle() == "")
         return 0;
-    }
+    
     else {
-        if (table[index].getNext() != NULL) {
-            ItemType * nodePtr = table[index].getNext();
-            while (nodePtr != NULL) {
-                nodePtr = nodePtr->getNext();
-                number++;
-            }
+        ItemType * nodePtr = &table[index];
+        while (nodePtr->getNext()) {
+            nodePtr = nodePtr->getNext();
+            number++;
         }
-        else
-            return number;
     }
     return number;
 }
@@ -247,18 +243,18 @@ int HashTable<ItemType>::countNode(int index) {
 // **************************************
 template <class ItemType>
 void HashTable<ItemType>::statistics() {
-    cout << "Number of collision: " << numberOfCollision << endl;
+    cout << "Number of Collision: " << numberOfCollision << endl;
 
-    double load = 100*loadNumber/TABLE_SIZE;
-    cout << "Load percent: " <<  load  << "%" << endl;
+    double loadFactor = (loadNumber*100)/TABLE_SIZE;
+    cout << "Load Factor: " <<  loadFactor  << "%" << endl;
     
-    int numList = 0;
+    int numberOfList = 0;
     for (int i = 0; i < TABLE_SIZE; i++) {
         if (table[i].getNext() != NULL) {
-            numList++;
+            numberOfList++;
         }
     }
-    cout << "Number of linked lists: " << numList << endl;
+    cout << "Number of linked lists: " << numberOfList << endl;
     
     int totalNode = 0;
     int longest = countNode(0);
@@ -269,11 +265,10 @@ void HashTable<ItemType>::statistics() {
             longest = countNode(i);
         }
     }
-    cout << "Longest: " << longest << endl;
-    double average = totalNode/numList;
+
+    cout << "Longest linked list contains : " << longest << " nodes" << endl;
+    double average = totalNode/numberOfList;
     cout << "average number of nodes stored in linked lists: " << average << endl;
     return;
 }
-
-
 #endif
