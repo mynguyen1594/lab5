@@ -41,25 +41,26 @@ bool readFile(HashTable<Movie> * movie) {
     string line, title;
     int year;
     Movie newMovie;
+    bool empty = true;
     
-    inputFile.open("/Users/mynguyen5194/Desktop/running_test/running_test/academy_award_films.txt");
-    if (inputFile.is_open()) {
-        while (!inputFile.eof()) {
-            // Insert sth here to the hash table
-            while (getline(inputFile, line, '\r')) {
-                year = atoi(line.substr(0, 4).c_str());
-                title = line.substr(5, line.length()-5);
-                newMovie.setInfo(year, title);
-                movie->insert(newMovie);
-            }
-        }
-    }
-    else {
-        cout << "Error opening file 'academy_award_films.txt'" << endl;
+    inputFile.open("/Users/mynguyen5194/Desktop/lab5/lab5/academy_award_films.txt");
+    if (!inputFile) {
+        cout << "Error opening file 'academy_award_files.txt'" << endl;
         return false;
     }
-    
+    while (getline(inputFile, line, '\r')) {
+        year = atoi(line.substr(0, 4).c_str());
+        title = line.substr(5, line.length()-5);
+        newMovie.setInfo(year, title);
+        movie->insert(newMovie);
+        empty = false;
+    }
+
     inputFile.close();
+    
+    if (empty) {
+        return false;
+    }
     
     return true;
 }
@@ -85,8 +86,8 @@ void menu(HashTable<Movie> * movie) {
     do {
         cout << "Please enter your option: ";
         getline(cin, option);
-        
-        if (isalpha(option[0]) && option.length() == 1) {
+    
+        if (isalpha(option[0]) && option.length() == 1 && !movie->isEmpty()) {
             
             switch (toupper(option[0])) {
                 case 'S':
@@ -127,8 +128,7 @@ void menu(HashTable<Movie> * movie) {
                     break;
             }
         }
-        
-    } while (toupper(option[0]) != 'Q');
+    } while (toupper(option[0]) != 'Q' && !movie->isEmpty());
     return;
 }
 

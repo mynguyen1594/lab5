@@ -28,6 +28,7 @@ public:
     ItemType getTable() {return table[TABLE_SIZE];}
     int getloadNumber() {return loadNumber;}
     
+    bool isEmpty();
     int hash(const ItemType & newEntry);
     bool insert(const ItemType & newEntry);
     bool search(const ItemType & target, ItemType & returnTarget);
@@ -69,6 +70,22 @@ HashTable<ItemType>::~HashTable<ItemType>() {
     }
     delete [] table;
 }
+
+// *************************************************
+//  isEmpty function
+//  This function checks each element in the hash
+
+// *************************************************
+template <class ItemType>
+bool HashTable<ItemType>::isEmpty() {
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        if (table[i].getTitle() == "") {
+            return false;
+        }
+    }
+    return true;
+}
+
 // *************************************************
 //  hash function
 //  This function finds the sum of the newEntry as
@@ -249,14 +266,14 @@ void HashTable<ItemType>::statistics() {
     cout << "Load Factor: " <<  loadFactor  << "%" << endl;
     
     int numberOfList = 0;
+    int totalNode = 0;
     for (int i = 0; i < TABLE_SIZE; i++) {
-        if (table[i].getNext() != NULL) {
+        if (table[i].getNext() != NULL)
             numberOfList++;
-        }
+        
     }
     cout << "Number of linked lists: " << numberOfList << endl;
     
-    int totalNode = 0;
     int longest = countNode(0);
 
     for (int i = 1; i < TABLE_SIZE; i++) {
@@ -265,10 +282,11 @@ void HashTable<ItemType>::statistics() {
             longest = countNode(i);
         }
     }
-
+    cout << "Total of nodes: " << totalNode << endl;
     cout << "Longest linked list contains : " << longest << " nodes" << endl;
-    double average = totalNode/numberOfList;
-    cout << "average number of nodes stored in linked lists: " << average << endl;
+    if (numberOfList > 0) {
+        cout << "average number of nodes stored in linked lists: " << totalNode/numberOfList << endl;
+    }
     return;
 }
 #endif
