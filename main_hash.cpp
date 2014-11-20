@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 MyNguyen. All rights reserved.
 //
 
+// Name: MY NGUYEN
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -33,13 +35,16 @@ int main() {
     return 0;
 }
 
-// **************************************
+// **************************************************
 //  readFile functions
-// **************************************
+//  This function reads the file academy_award_films.
+//  txt and inserts each line into the movie pointer
+//  Return: true if file can be opened
+//          false if not
+// **************************************************
 bool readFile(HashTable<Movie> * movie) {
     ifstream inputFile;
-    string line, title;
-    int year;
+    string line;
     Movie newMovie;
     bool empty = true;
     
@@ -48,9 +53,9 @@ bool readFile(HashTable<Movie> * movie) {
         cout << "Error opening file 'academy_award_files.txt'" << endl;
         return false;
     }
-    while (getline(inputFile, line, '\r')) {
-        year = atoi(line.substr(0, 4).c_str());
-        title = line.substr(5, line.length()-5);
+    while (getline(inputFile, line)) {
+        int year = atoi(line.substr(0, 4).c_str());
+        string title = line.substr(5, line.length()-5);
         newMovie.setInfo(year, title);
         movie->insert(newMovie);
         empty = false;
@@ -65,9 +70,11 @@ bool readFile(HashTable<Movie> * movie) {
     return true;
 }
 
-// **************************************
+// **********************************************
 //  display function
-// **************************************
+//  This function displays the content of a movie
+//  Return: none
+// **********************************************
 void display(Movie & movie) {
     if (movie.getYear() != -1 && movie.getTitle() != "")
         cout << movie.getYear() << " " << movie.getTitle() << endl;
@@ -76,6 +83,10 @@ void display(Movie & movie) {
 
 // **************************************
 //  menu function
+//  This function gets the users' inputs and runs
+//  the appropriate options with the correct syntax
+//  It keeps getting the users' input until Q is entered
+//  Return: none
 // **************************************
 void menu(HashTable<Movie> * movie) {
     string option;
@@ -133,7 +144,8 @@ void menu(HashTable<Movie> * movie) {
 }
 
 // **************************************
-//  menu function
+//  showMenu function
+//  This function displays the menu
 // **************************************
 void showMenu() {
     cout << "S - Search by a unique key\n"

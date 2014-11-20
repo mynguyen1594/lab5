@@ -12,7 +12,7 @@ using namespace std;
 #ifndef lab5_HashTable_h
 #define lab5_HashTable_h
 
-#define TABLE_SIZE 10
+#define TABLE_SIZE 31
 
 template <class ItemType>
 class HashTable {
@@ -24,9 +24,6 @@ private:
 public:
     HashTable();
     ~HashTable();
-    
-    ItemType getTable() {return table[TABLE_SIZE];}
-    int getloadNumber() {return loadNumber;}
     
     bool isEmpty();
     int hash(const ItemType & newEntry);
@@ -61,8 +58,8 @@ HashTable<ItemType>::~HashTable<ItemType>() {
         currentPtr = table[i].getNext();
         table[i].setNext(NULL); // Disconnect linked list from hash table
         
-        // Start deleting from the beginning
-        while (currentPtr != NULL) {
+        // Start deleting the linked list from the beginning
+        while (currentPtr) {
             nextPtr = currentPtr;
             currentPtr = currentPtr->getNext();
             delete nextPtr;
@@ -73,8 +70,9 @@ HashTable<ItemType>::~HashTable<ItemType>() {
 
 // *************************************************
 //  isEmpty function
-//  This function checks each element in the hash
-
+//  This function checks if the hash table is empty
+//  Return: true if empty
+//          false if not
 // *************************************************
 template <class ItemType>
 bool HashTable<ItemType>::isEmpty() {
@@ -91,7 +89,7 @@ bool HashTable<ItemType>::isEmpty() {
 //  This function finds the sum of the newEntry as
 //  a title by converting each character to ascii
 //  and summing them up.
-//  Return: a hashed number less than the TABLE_SIZE
+//  Return: a hashed number
 // *************************************************
 template <class ItemType>
 int HashTable<ItemType>::hash(const ItemType & newEntry) {
@@ -117,8 +115,9 @@ bool HashTable<ItemType>::insert(const ItemType & newEntry) {
     bool success = false;
     ItemType * newNode = new ItemType(newEntry);
     int index = hash(newEntry); // Get the index
+    ItemType * nodePtr = &table[index];
         
-    // if the place is empty
+    // if the place in the hash table is empty
     if (table[index].getTitle() == "") {
         table[index] = *newNode;
         loadNumber++;
@@ -127,8 +126,6 @@ bool HashTable<ItemType>::insert(const ItemType & newEntry) {
         
     // if not, then create a linked list at this index
     else {
-        ItemType * nodePtr = &table[index];
-        
         while (nodePtr->getNext())
             nodePtr = nodePtr->getNext();
         nodePtr->setNext(newNode);
@@ -151,7 +148,7 @@ template <class ItemType>
 bool HashTable<ItemType>::search(const ItemType & target, ItemType & returnTarget) {
     bool found = false;
     
-    int index = hash(target);
+    int index = hash(target);   // Get the index of the entered value
     ItemType * nodePtr = &table[index];
     
     while (nodePtr) {
@@ -176,9 +173,8 @@ bool HashTable<ItemType>::search(const ItemType & target, ItemType & returnTarge
 template <class ItemType>
 void HashTable<ItemType>::printItem(ItemType * nodePtr, bool displayList , void visit(ItemType &)) {
     ItemType item;
-    
-    item.setYear(nodePtr->getYear());
-    item.setTitle(nodePtr->getTitle());
+
+    item.setInfo(nodePtr->getYear(), nodePtr->getTitle());
     if (!displayList) {
         cout << "\t\t ";
     }
@@ -200,7 +196,7 @@ void HashTable<ItemType>::displayList(void visit(ItemType &)) {
         printItem(nodePtr, true, visit);
         
         // Print the linked list if any
-        while (nodePtr->getNext() != NULL) {
+        while (nodePtr->getNext()) {
             nodePtr = nodePtr->getNext();
             printItem(nodePtr, true, visit);
         }
@@ -225,7 +221,7 @@ void HashTable<ItemType>::printHashTable(void (visit)(ItemType &)) {
             printItem(nodePtr, true, visit);
             
             // Print the linked list if any
-            while (nodePtr->getNext() != NULL) {
+            while (nodePtr->getNext()) {
                 nodePtr = nodePtr->getNext();
                 printItem(nodePtr, false, visit);
             }
@@ -238,16 +234,20 @@ void HashTable<ItemType>::printHashTable(void (visit)(ItemType &)) {
 
 // **************************************
 //  countNode function
+//  This function counts the number of nodes
+//  in a linked list
+//  Return: number of node if any
+//          otherwise return 0
 // **************************************
 template <class ItemType>
 int HashTable<ItemType>::countNode(int index) {
     int number = 0;
+    ItemType * nodePtr = &table[index];
     
-    if (table[index].getTitle() == "")
+    if (!nodePtr)
         return 0;
     
     else {
-        ItemType * nodePtr = &table[index];
         while (nodePtr->getNext()) {
             nodePtr = nodePtr->getNext();
             number++;
@@ -257,36 +257,37 @@ int HashTable<ItemType>::countNode(int index) {
 }
 // **************************************
 //  statistics function
+//  This function display some statistic info
+//  about the hash table
+//  Return: none
 // **************************************
 template <class ItemType>
 void HashTable<ItemType>::statistics() {
     cout << "Number of Collision: " << numberOfCollision << endl;
-
-    double loadFactor = (loadNumber*100)/TABLE_SIZE;
-    cout << "Load Factor: " <<  loadFactor  << "%" << endl;
+    cout << "Load Factor: " << (loadNumber*100)/TABLE_SIZE << "%\n";
     
-    int numberOfList = 0;
-    int totalNode = 0;
+    double numberOfList = 0;
+    double totalNode = 0;
+
     for (int i = 0; i < TABLE_SIZE; i++) {
-        if (table[i].getNext() != NULL)
+        totalNode += countNode(i);
+        if (table[i].getNext())
             numberOfList++;
-        
     }
-    cout << "Number of linked lists: " << numberOfList << endl;
+    cout << "Number of Linked Lists: " << numberOfList << endl;
     
     int longest = countNode(0);
-
     for (int i = 1; i < TABLE_SIZE; i++) {
-        totalNode++;
-        if (longest <= countNode(i)) {
+        if (longest <= countNode(i))
             longest = countNode(i);
-        }
     }
-    cout << "Total of nodes: " << totalNode << endl;
-    cout << "Longest linked list contains : " << longest << " nodes" << endl;
-    if (numberOfList > 0) {
-        cout << "average number of nodes stored in linked lists: " << totalNode/numberOfList << endl;
-    }
+    
+    cout << "Total Nodes in the Linked Lists: " << totalNode << " node(s)\n";
+    cout << "Longest Linked List Contains : " << longest << " node(s)\n";
+    if (numberOfList > 0)
+        cout << "Average Number of Nodes Stored in Linked Lists: " << totalNode/numberOfList << endl;
+    else
+        cout << "Average Number of Nodes Stored in Linked Lists: 0" << endl;
     return;
 }
 #endif
